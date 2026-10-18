@@ -8,6 +8,11 @@ from open_notebook.utils.proxy import ensure_internal_no_proxy
 
 ensure_internal_no_proxy()
 
+# Optional: trust the OS certificate store (internal CA on closed networks).
+from open_notebook.utils.system_certs import use_system_trust_store
+
+use_system_trust_store()
+
 from .embedding_commands import (
     embed_insight_command,
     embed_note_command,

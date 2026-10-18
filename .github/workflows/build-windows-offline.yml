@@ -1,0 +1,57 @@
+name: Build Windows Offline Bundle
+
+# Builds a self-contained Open Notebook folder for Windows (no Docker, no internet
+# needed at runtime). Download the artifact and copy it into the closed network.
+on:
+  workflow_dispatch:
+    inputs:
+      surreal-version:
+        description: 'SurrealDB version tag (e.g. v2.3.10). Empty = latest stable v2'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build bundle
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          windows\build-offline-bundle.ps1 `
+            -OutputDir "$env:GITHUB_WORKSPACE\dist\OpenNotebook" `
+            -SurrealVersion "${{ github.event.inputs.surreal-version }}"
+
+      - name: Smoke test (start, health check, stop)
+        shell: pwsh
+        run: |
+          $root = "$env:GITHUB_WORKSPACE\dist\OpenNotebook"
+          & "$root\Start-OpenNotebook.ps1" -NoBrowser
+          if ($LASTEXITCODE -ne 0) { Get-ChildItem "$root\logs" | ForEach-Object { "== $($_.Name)"; Get-Content $_.FullName -Tail 40 }; exit 1 }
+          Invoke-WebRequest http://127.0.0.1:5055/health -UseBasicParsing | Select-Object -ExpandProperty Content
+          Invoke-WebRequest http://127.0.0.1:8502 -UseBasicParsing | Select-Object -ExpandProperty StatusCode
+          Start-Sleep -Seconds 10
+          Get-ChildItem "$root\logs" | ForEach-Object { "== $($_.Name)"; Get-Content $_.FullName -Tail 15 }
+          & "$root\Stop-OpenNotebook.ps1"
+          # Ship a clean bundle: no logs, no local DB, no generated .env
+          Remove-Item "$root\logs", "$root\run", "$root\db", "$root\.env", "$root\app\data" -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenNotebook-Windows-offline
+          path: dist/OpenNotebook
+          retention-days: 14

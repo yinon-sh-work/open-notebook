@@ -1,2 +1,6 @@
 # Ensure shell scripts always use LF so they run in Linux containers (e.g. Docker)
 *.sh text eol=lf
+
+# Windows launcher scripts need CRLF
+*.bat text eol=crlf
+*.ps1 text eol=crlf

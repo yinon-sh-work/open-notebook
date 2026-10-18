@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 import tomllib
 from pathlib import Path
@@ -59,6 +60,15 @@ async def get_latest_version_cached(current_version: str) -> tuple[Optional[str]
     # Cache expired or not yet set
     if _version_cache["timestamp"] > 0:
         logger.info(f"Version cache expired (age: {cache_age:.0f}s), refreshing...")
+
+    # Closed / offline networks: skip the GitHub version check entirely
+    if os.getenv("OPEN_NOTEBOOK_DISABLE_VERSION_CHECK", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    ):
+        return None, False
 
     # Perform version check with strict error handling
     try:

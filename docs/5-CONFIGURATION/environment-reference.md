@@ -118,6 +118,8 @@ NO_PROXY=localhost,127.0.0.1,host.docker.internal,surrealdb,.local
 | Variable | Default | Read by | Description |
 |----------|---------|---------|-------------|
 | `ESPERANTO_SSL_CA_BUNDLE` | none | API + Worker | Path (inside the container) to a CA bundle that signs your provider's certificate. Applies to model calls and to Test Connection / model discovery |
+| `OPEN_NOTEBOOK_USE_SYSTEM_CERTS` | `false` | API + Worker | `true` = trust the operating-system certificate store (e.g. an internal CA installed in Windows "Trusted Root") via `truststore`. Used by the Windows offline bundle |
+| `OPEN_NOTEBOOK_DISABLE_VERSION_CHECK` | `false` | API | `true` = skip the GitHub "update available" check (offline / closed networks) |
 | `ESPERANTO_SSL_VERIFY` | `true` | API + Worker | `false` turns off certificate verification. Development only |
 
 ---

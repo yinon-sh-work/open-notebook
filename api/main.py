@@ -10,6 +10,11 @@ from open_notebook.utils.proxy import ensure_internal_no_proxy
 
 ensure_internal_no_proxy()
 
+# Optional: trust the OS certificate store (internal CA on closed networks).
+from open_notebook.utils.system_certs import use_system_trust_store
+
+use_system_trust_store()
+
 import asyncio
 import os
 from contextlib import asynccontextmanager

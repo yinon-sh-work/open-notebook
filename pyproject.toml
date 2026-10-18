@@ -46,6 +46,7 @@ dependencies = [
     "numpy>=2.4.1",
     "pycountry>=26.2.16",
     "babel>=2.18.0",
+    "truststore>=0.10.4",  # use the OS certificate store (internal CAs on Windows)
 ]
 
 [tool.setuptools]
